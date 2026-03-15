@@ -10,6 +10,7 @@ class Creature:
 
         self.listPoints.append(Point(x, y))
         self.testCreature(x, y)
+        self.brain = None
 
     def testCreature(self, x, y):
         angles = [np.pi / 6, np.pi - np.pi / 6]
@@ -52,10 +53,32 @@ class Creature:
             perp_b /= norm_b
 
         # Push p_a and p_b in opposite tangential directions
-        p_a.apply_force(perp_a * torque)
-        p_b.apply_force(-perp_b * torque)
+        force_a = perp_a * torque
+        force_b = -perp_b * torque
+
+        p_a.apply_force(force_a)
+        p_b.apply_force(force_b)
+        p_center.apply_force(-(force_a + force_b))  # exact opposite of total
+
+    def reset_internal_velocity(self):
+        # Compute average velocity across all points (center of mass motion)
+        avg_velocity = np.zeros(2)
+        for p in self.listPoints:
+            avg_velocity += p.pos - p.prev_pos
+        avg_velocity /= len(self.listPoints)
+
+        # Cancel all velocities, then restore the shared average
+        for p in self.listPoints:
+            p.prev_pos = p.pos - avg_velocity
 
     def update(self, dt):
+        if self.brain:
+            forces, new_pose = self.brain.current_forces(dt)
+            if new_pose:
+                self.reset_internal_velocity()  # prevent "jump" when changing pose
+            for i_center, i_a, i_b, torque in forces:
+                self.apply_joint_force(i_center, i_a, i_b, torque)
+
         for point in self.listPoints:
             point.update(dt)
         for _ in range(10):

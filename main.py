@@ -3,6 +3,7 @@ import sys
 import numpy as np
 from physics import Point, Link
 from creature import Creature
+from brain import Brain
 
 
 WIDTH, HEIGHT = 1000, 800
@@ -16,6 +17,12 @@ def main():
     clock = pygame.time.Clock()
 
     creature1 = Creature(WIDTH // 2, HEIGHT // 2)
+    # creature1.brain = Brain(
+    #     [
+    #         {"duration": 1, "forces": [(0, 1, 2, 8000.0)]},
+    #         {"duration": 1, "forces": [(0, 1, 2, -8000.0)]},
+    #     ]
+    # )
 
     while True:
         dt = clock.tick(FPS) / 1000.0
