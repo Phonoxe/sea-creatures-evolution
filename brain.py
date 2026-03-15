@@ -10,7 +10,8 @@ class Brain:
         """
         self.poses = poses
         self.pose_index = 0
-        self.pose_timer = 0.0
+        # Start at duration so the first pose fires on the first frame
+        self.pose_timer = self.poses[0]["duration"] if self.poses else 0.0
 
     def current_forces(self, dt):
         """Advance the clock and return the target forces for this frame."""
@@ -18,6 +19,7 @@ class Brain:
             return [], False
 
         self.pose_timer += dt
+
         if self.pose_timer >= self.poses[self.pose_index]["duration"]:
             self.pose_timer = 0.0
             self.pose_index = (self.pose_index + 1) % len(self.poses)

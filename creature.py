@@ -1,5 +1,6 @@
 import numpy as np
 from physics import Point, Link
+from fluid import apply_segment_drag, apply_wedge_force
 
 
 class Creature:
@@ -71,13 +72,55 @@ class Creature:
         for p in self.listPoints:
             p.prev_pos = p.pos - avg_velocity
 
-    def update(self, dt):
+    def apply_fluid_forces(self, dt):
+        # Law 1 — drag on every segment
+        # Find all shared points (joints)
+        point_link_count = {id(p): 0 for p in self.listPoints}
+        for link in self.listLinks:
+            point_link_count[id(link.p0)] += 1
+            point_link_count[id(link.p1)] += 1
+
+        for link in self.listLinks:
+            # Apply drag only to the endpoint that is not a shared joint
+            p0_is_joint = point_link_count[id(link.p0)] > 1
+            p1_is_joint = point_link_count[id(link.p1)] > 1
+
+            apply_segment_drag(
+                link.p0,
+                link.p1,
+                dt,
+                apply_to_p0=not p0_is_joint,
+                apply_to_p1=not p1_is_joint,
+            )
+
+        # Law 2 — wedge resistance at every joint
+        # A joint is defined by any two links sharing a point
+        for i, link_a in enumerate(self.listLinks):
+            for link_b in self.listLinks[i + 1 :]:
+                # Find the shared point and the two outer points
+                if link_a.p0 is link_b.p0:
+                    apply_wedge_force(link_a.p1, link_a.p0, link_b.p1, dt)
+                elif link_a.p0 is link_b.p1:
+                    apply_wedge_force(link_a.p1, link_a.p0, link_b.p0, dt)
+                elif link_a.p1 is link_b.p0:
+                    apply_wedge_force(link_a.p0, link_a.p1, link_b.p1, dt)
+                elif link_a.p1 is link_b.p1:
+                    apply_wedge_force(link_a.p0, link_a.p1, link_b.p0, dt)
+
+    def update(self, dt, screen=None):
         if self.brain:
             forces, new_pose = self.brain.current_forces(dt)
             if new_pose:
                 self.reset_internal_velocity()  # prevent "jump" when changing pose
             for i_center, i_a, i_b, torque in forces:
                 self.apply_joint_force(i_center, i_a, i_b, torque)
+
+        self.apply_fluid_forces(dt)  # fluid forces accumulate before physics step
+
+        # if screen:
+        #     from fluid import draw_debug_forces
+
+        #     draw_debug_forces(screen, self.listPoints, scale=50)
 
         for point in self.listPoints:
             point.update(dt)
