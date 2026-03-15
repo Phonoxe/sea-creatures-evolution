@@ -28,7 +28,11 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                creature1.listPoints[0].apply_force(np.array([0.0, -10000.0]))
+                creature1.listPoints[1].apply_force(np.array([-10000.0, -10000.0]))
+                creature1.listPoints[2].apply_force(np.array([10000.0, -10000.0]))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+                creature1.listPoints[1].apply_force(np.array([-10000.0, 10000.0]))
+                creature1.listPoints[2].apply_force(np.array([10000.0, 10000.0]))
 
         creature1.update(dt)
 

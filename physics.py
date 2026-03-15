@@ -6,9 +6,20 @@ class Point:
         self.pos = np.array([x, y], dtype=float)
         self.prev_pos = np.array([x, y], dtype=float)
         self.force = np.zeros(2)
+        self.radius = 5
 
     def apply_force(self, force):
         self.force += force
+
+    def collide(self, other):
+        diff = self.pos - other.pos
+        dist = np.linalg.norm(diff)
+        min_dist = 1 + self.radius * 2  # Assuming both points have the same radius
+        if dist < min_dist and dist > 1e-6:
+            # Push both points apart equally
+            correction = diff / dist * (min_dist - dist) * 0.5
+            self.pos += correction
+            other.pos -= correction
 
     def update(self, dt):
         acceleration = self.force  # mass is assumed to be 1 for simplicity
@@ -20,7 +31,7 @@ class Point:
     def draw(self, screen, color=(200, 200, 255)):
         import pygame
 
-        pygame.draw.circle(screen, (240, 100, 100), self.pos.astype(int), 5)
+        pygame.draw.circle(screen, (240, 100, 100), self.pos.astype(int), self.radius)
 
 
 class Link:
