@@ -14,7 +14,7 @@ class Point:
     def collide(self, other):
         diff = self.pos - other.pos
         dist = np.linalg.norm(diff)
-        min_dist = 1 + self.radius * 2  # Assuming both points have the same radius
+        min_dist = self.radius * 2  # Assuming both points have the same radius
         if dist < min_dist and dist > 1e-6:
             # Push both points apart equally
             correction = diff / dist * (min_dist - dist) * 0.5

@@ -5,7 +5,7 @@ from physics import Point, Link
 from creature import Creature
 
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1000, 800
 FPS = 60
 
 
@@ -28,11 +28,9 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                creature1.listPoints[1].apply_force(np.array([-10000.0, -10000.0]))
-                creature1.listPoints[2].apply_force(np.array([10000.0, -10000.0]))
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-                creature1.listPoints[1].apply_force(np.array([-10000.0, 10000.0]))
-                creature1.listPoints[2].apply_force(np.array([10000.0, 10000.0]))
+                creature1.apply_joint_force(0, 1, 2, 5000.0)  # contract
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                creature1.apply_joint_force(0, 1, 2, -5000.0)  # extend
 
         creature1.update(dt)
 
