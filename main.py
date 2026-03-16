@@ -1,7 +1,6 @@
 import pygame
 import sys
 import numpy as np
-from physics import Point, Link
 from creature import Creature
 from brain import Brain
 from camera import Camera
@@ -25,12 +24,7 @@ def main():
     clock = pygame.time.Clock()
 
     g = random_genome()
-    print(f"genome length: {len(g)}")
     creature1 = decode_genome(g, WIDTH // 2, HEIGHT // 2)
-    if creature1:
-        print(f"points: {len(creature1.listPoints)}, links: {len(creature1.listLinks)}")
-    else:
-        print("decode failed")
 
     camera = Camera(WIDTH, HEIGHT, smoothing=0.08)
     camera.pos = get_center(creature1).copy()
@@ -38,10 +32,6 @@ def main():
     background = Background(WIDTH, HEIGHT)
 
     show_debug = False
-
-    # Give the creature an initial push upwards
-    # for p in creature1.listPoints:
-    #     p.prev_pos = p.pos - np.array([0, -1])
 
     while True:
         dt = clock.tick(FPS) / 1000.0
@@ -53,23 +43,33 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            #     creature1.apply_joint_force(0, 1, 2, 5000.0)  # contract
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-            #     creature1.apply_joint_force(0, 1, 2, -5000.0)  # extend
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                show_debug = not show_debug
 
-        # Update
         center = get_center(creature1)
         camera.update(center)
         background.update(dt, camera.pos)
         creature1.update(dt, screen if show_debug else None)
 
-        # Draw
-        offset = camera.offset()
+        screen.fill((10, 18, 30))
         background.draw(screen, camera)
-        creature1.draw(screen, offset)
+        creature1.draw(screen, camera.offset())
         pygame.display.flip()
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--evolve", action="store_true", help="Run evolution headlessly"
+    )
+    parser.add_argument("--generations", type=int, default=100)
+    args = parser.parse_args()
+
+    if args.evolve:
+        from evolution import run_evolution
+
+        run_evolution(n_generations=args.generations)
+    else:
+        main()
