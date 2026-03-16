@@ -7,24 +7,17 @@ class Creature:
     def __init__(self, x, y, segment_length=50):
         self.listPoints = []
         self.listLinks = []
-        self.segment_length = segment_length
-
+        self.default_segment_length = segment_length
         self.listPoints.append(Point(x, y))
-        self.testCreature(x, y)
         self.brain = None
-
-    def testCreature(self, x, y):
-        angles = [np.pi / 6, np.pi - np.pi / 6]
-        for angle in angles:
-            self.add_point(0, angle)
 
     def add_point(self, point_linked_to, angle):
         last_point = self.listPoints[point_linked_to]
-        new_x = last_point.pos[0] + self.segment_length * np.cos(angle)
-        new_y = last_point.pos[1] + self.segment_length * np.sin(angle)
+        new_x = last_point.pos[0] + 50 * np.cos(angle)
+        new_y = last_point.pos[1] + 50 * np.sin(angle)
         new_point = Point(new_x, new_y)
         self.listPoints.append(new_point)
-        new_link = Link(last_point, new_point, self.segment_length)
+        new_link = Link(last_point, new_point, 50)
         self.listLinks.append(new_link)
 
     def apply_joint_force(self, i_center, i_a, i_b, torque):

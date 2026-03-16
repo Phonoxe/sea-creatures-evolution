@@ -6,6 +6,7 @@ from creature import Creature
 from brain import Brain
 from camera import Camera
 from background import Background
+from genome import random_genome, decode_genome
 
 
 WIDTH, HEIGHT = 1000, 800
@@ -23,13 +24,13 @@ def main():
     pygame.display.set_caption("Aquatic Evolution")
     clock = pygame.time.Clock()
 
-    creature1 = Creature(WIDTH // 2, HEIGHT // 2)
-    creature1.brain = Brain(
-        [
-            {"duration": 3, "forces": [(0, 1, 2, 8000.0)]},
-            {"duration": 1, "forces": [(0, 1, 2, -5000.0)]},
-        ]
-    )
+    g = random_genome()
+    print(f"genome length: {len(g)}")
+    creature1 = decode_genome(g, WIDTH // 2, HEIGHT // 2)
+    if creature1:
+        print(f"points: {len(creature1.listPoints)}, links: {len(creature1.listLinks)}")
+    else:
+        print("decode failed")
 
     camera = Camera(WIDTH, HEIGHT, smoothing=0.08)
     camera.pos = get_center(creature1).copy()
