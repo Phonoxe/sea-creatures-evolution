@@ -131,8 +131,8 @@ class Creature:
             for j in range(i + 1, len(self.listPoints)):
                 self.listPoints[i].collide(self.listPoints[j])
 
-    def draw(self, screen):
+    def draw(self, screen, offset):
         for link in self.listLinks:
-            link.draw(screen)
+            link.draw(screen, offset)
         for point in self.listPoints:
-            point.draw(screen)
+            point.draw(screen, offset)

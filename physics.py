@@ -28,10 +28,11 @@ class Point:
         self.pos = self.pos + velocity + acceleration * dt * dt
         self.force = np.zeros(2)  # reset after each step
 
-    def draw(self, screen, color=(200, 200, 255)):
+    def draw(self, screen, offset):
         import pygame
 
-        pygame.draw.circle(screen, (240, 100, 100), self.pos.astype(int), self.radius)
+        screen_pos = (self.pos + offset).astype(int)
+        pygame.draw.circle(screen, (43, 255, 255), screen_pos, self.radius)
 
 
 class Link:
@@ -49,9 +50,9 @@ class Link:
         self.p0.pos += correction
         self.p1.pos -= correction
 
-    def draw(self, screen, color=(200, 200, 255)):
+    def draw(self, screen, offset, color=(30, 100, 150)):
         import pygame
 
-        pygame.draw.line(
-            screen, color, self.p0.pos.astype(int), self.p1.pos.astype(int), 3
-        )
+        p0 = (self.p0.pos + offset).astype(int)
+        p1 = (self.p1.pos + offset).astype(int)
+        pygame.draw.line(screen, color, p0, p1, 3)
