@@ -4,7 +4,7 @@ from genome import decode_genome
 SIM_DURATION = 10.0  # seconds of creature time to simulate
 DT = 1 / 60  # fixed timestep (equivalent to 60fps)
 ENERGY_PENALTY = 0.0001  # scales down energy cost relative to distance
-CROSSING_PENALTY = 5.0  # fitness subtracted per self-intersection per frame
+CROSSING_PENALTY = 6.0  # fitness subtracted per self-intersection per frame
 
 
 def segments_intersect(p0, p1, p2, p3):
@@ -49,7 +49,8 @@ def simulate(genome, spawn_x=0.0, spawn_y=0.0):
     Run a creature headlessly for SIM_DURATION seconds.
     Returns its fitness score.
     """
-    creature = decode_genome(genome, spawn_x, spawn_y)
+    body_genes, brain_genes = genome
+    creature = decode_genome(body_genes, brain_genes, spawn_x, spawn_y)
     if creature is None:
         return 0.0
 
@@ -63,8 +64,8 @@ def simulate(genome, spawn_x=0.0, spawn_y=0.0):
         # Track energy before the brain fires
         if creature.brain:
             forces, new_pose = creature.brain.current_forces(DT)
-            if new_pose:
-                creature.reset_internal_velocity()
+            # if new_pose:
+            #     #creature.reset_internal_velocity()
             for i_center, i_a, i_b, torque in forces:
                 creature.apply_joint_force(i_center, i_a, i_b, torque)
                 total_energy += abs(torque)  # energy = sum of absolute torques applied
@@ -86,7 +87,8 @@ def simulate(genome, spawn_x=0.0, spawn_y=0.0):
     distance = float(np.linalg.norm(end_pos - start_pos))
 
     fitness = (
-        distance / (1 + total_energy * ENERGY_PENALTY)
+        distance
+        - (total_energy * ENERGY_PENALTY)
         - CROSSING_PENALTY * total_crossings / n_steps
     )
 

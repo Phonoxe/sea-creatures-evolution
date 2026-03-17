@@ -1,37 +1,16 @@
 import numpy as np
 import json
 import os
-from genome import random_genome, decode_genome
+from genome import mutate, crossover, random_genome, decode_genome
 from simulation import simulate
 from multiprocessing import Pool
 
-POPULATION_SIZE = 100
-ELITE_COUNT = 50  # top N survivors kept unchanged each generation
-MUTATION_RATE = 0.15  # probability of mutating each gene
-MUTATION_STRENGTH = 0.2  # how much each gene can change (fraction of its range)
+POPULATION_SIZE = 1000
+ELITE_COUNT = 500  # top N survivors kept unchanged each generation
 CROSSOVER_RATE = 0.6  # probability of crossover vs pure mutation
 
 
-def mutate(genome):
-    g = genome.copy()
-    for i in range(len(g)):
-        if np.random.random() < MUTATION_RATE:
-            g[i] += np.random.randn() * abs(g[i] + 1e-6) * MUTATION_STRENGTH
-    return g
-
-
-def crossover(parent_a, parent_b):
-    """Single-point crossover between two same-length genomes."""
-    if len(parent_a) != len(parent_b):
-        # Different lengths — just mutate the fitter one
-        return mutate(parent_a)
-    point = np.random.randint(1, len(parent_a))
-    child = np.concatenate([parent_a[:point], parent_b[point:]])
-    return mutate(child)
-
-
 def reproduce(parents, target_count):
-    """Breed a new generation from a pool of parents."""
     children = []
     while len(children) < target_count:
         a = parents[np.random.randint(len(parents))]
@@ -44,25 +23,24 @@ def reproduce(parents, target_count):
 
 
 def save_generation(generation, population, fitnesses, path="evolution_data"):
-    """Save every creature of a generation to disk."""
     os.makedirs(path, exist_ok=True)
     data = {
         "generation": generation,
         "fitnesses": fitnesses,
-        "genomes": [g.tolist() for g in population],
+        "genomes": [
+            {"body": body.tolist(), "brain": brain.tolist()}
+            for body, brain in population
+        ],
     }
-    filepath = os.path.join(path, f"gen_{generation:04d}.json")
-    with open(filepath, "w") as f:
+    with open(os.path.join(path, f"gen_{generation:04d}.json"), "w") as f:
         json.dump(data, f)
 
 
 def load_generation(generation, path="evolution_data"):
-    """Load a saved generation from disk."""
-    filepath = os.path.join(path, f"gen_{generation:04d}.json")
-    with open(filepath, "r") as f:
+    with open(os.path.join(path, f"gen_{generation:04d}.json"), "r") as f:
         data = json.load(f)
-    genomes = [np.array(g) for g in data["genomes"]]
-    return genomes, data["fitnesses"]
+    population = [(np.array(g["body"]), np.array(g["brain"])) for g in data["genomes"]]
+    return population, data["fitnesses"]
 
 
 def run_evolution(n_generations=100, save_every=1, path="evolution_data"):

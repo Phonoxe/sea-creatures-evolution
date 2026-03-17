@@ -2,9 +2,7 @@ import numpy as np
 
 
 # Law 1 — perpendicular drag on each segment
-def apply_segment_drag(
-    p0, p1, dt, drag_coefficient=2.0, apply_to_p0=True, apply_to_p1=True
-):
+def apply_segment_drag(p0, p1, dt, drag_coefficient=30):
     seg = p1.pos - p0.pos
     seg_len = np.linalg.norm(seg)
     if seg_len < 1e-6:
@@ -21,10 +19,8 @@ def apply_segment_drag(
 
     drag = -perp_vel * seg_len * drag_coefficient
 
-    if apply_to_p0:
-        p0.apply_force(drag)
-    if apply_to_p1:
-        p1.apply_force(drag)
+    p0.apply_force(drag * 0.5)
+    p1.apply_force(drag * 0.5)
 
 
 # Law 2 — wedge resistance at a joint

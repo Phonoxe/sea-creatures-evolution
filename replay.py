@@ -1,11 +1,11 @@
 import pygame
 import sys
 import numpy as np
-import json
 import os
 from genome import decode_genome
 from camera import Camera
 from background import Background
+from evolution import load_generation
 
 WIDTH, HEIGHT = 1000, 800
 FPS = 60
@@ -16,19 +16,11 @@ def get_center(creature):
     return positions.mean(axis=0)
 
 
-def load_generation(generation, path="evolution_data"):
-    filepath = os.path.join(path, f"gen_{generation:04d}.json")
-    with open(filepath, "r") as f:
-        data = json.load(f)
-    genomes = [np.array(g) for g in data["genomes"]]
-    fitnesses = data["fitnesses"]
-    return genomes, fitnesses
-
-
 def replay(generation, creature_index=0, path="evolution_data"):
-    genomes, fitnesses = load_generation(generation, path)
-    genome = genomes[creature_index]
+    population, fitnesses = load_generation(generation, path)
+    body_genes, brain_genes = population[creature_index]
     fitness = fitnesses[creature_index]
+    creature = decode_genome(body_genes, brain_genes, WIDTH // 2, HEIGHT // 2)
 
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -37,7 +29,6 @@ def replay(generation, creature_index=0, path="evolution_data"):
     )
     clock = pygame.time.Clock()
 
-    creature = decode_genome(genome, WIDTH // 2, HEIGHT // 2)
     if creature is None:
         print("Failed to decode genome.")
         return
@@ -45,7 +36,6 @@ def replay(generation, creature_index=0, path="evolution_data"):
     camera = Camera(WIDTH, HEIGHT, smoothing=0.08)
     camera.pos = get_center(creature).copy()
     background = Background(WIDTH, HEIGHT)
-
     show_debug = False
 
     while True:
@@ -76,8 +66,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gen", type=int, default=0, help="Generation to replay")
-    parser.add_argument("--index", type=int, default=0, help="Creature index (0=best)")
+    parser.add_argument("--gen", type=int, default=0)
+    parser.add_argument("--index", type=int, default=0)
     parser.add_argument("--path", type=str, default="evolution_data")
     args = parser.parse_args()
 
