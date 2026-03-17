@@ -93,3 +93,7 @@ def simulate(genome, spawn_x=0.0, spawn_y=0.0):
     )
 
     return max(fitness, 0.0)  # never negative
+
+
+# There are still 2 errors at least, maybe related, maybe not, the first one is the unwanted rotation (comes from drag)
+# The second one is that evolution seems to favoritize crossing 4 points creature which exploit the wedge (will maybe be fixed by the fixing of the rotation)
